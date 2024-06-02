@@ -19,12 +19,11 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Build and SonarQube Analysis') {
             steps {
                 script {
                     withSonarQubeEnv('SonarQube') {
-                        bat 'mvn clean package'
-                        bat ''' mvn clean verify package -Dmaven.plugin.validation=brief sonar:sonar -Dsonar.projectKey=X-marts -Dsonar.projectName='X-marts' -Dsonar.host.url=http://localhost:9000 '''
+                        bat 'mvn clean verify package -Dmaven.plugin.validation=brief sonar:sonar -Dsonar.projectKey=X-marts -Dsonar.projectName="X-marts" -Dsonar.host.url=http://localhost:9000'
                         echo 'SonarQube Analysis Completed'
                     }
                 }
