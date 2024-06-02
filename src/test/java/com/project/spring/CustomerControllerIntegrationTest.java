@@ -61,12 +61,13 @@ class CustomerControllerIntegrationTest {
     @Test
     void testGetCustomerById_Success() throws Exception {
         CustomerResponse customer = new CustomerResponse();
-        customer.setId(UUID.randomUUID());
+        UUID id = UUID.randomUUID();
+        customer.setId(id);
         customer.setNama("Test Customer");
         customer.setWallet(5000.0);
-        Mockito.when(customerService.getCustomerById(Mockito.anyString())).thenReturn(customer);
+        Mockito.when(customerService.getCustomerById(id.toString())).thenReturn(customer);
 
-        mockMvc.perform(get("/api/customers/" + UUID.randomUUID().toString())
+        mockMvc.perform(get("/api/customers/" + id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nama").value("Test Customer"))
@@ -119,7 +120,7 @@ class CustomerControllerIntegrationTest {
     @Test
     void testDeleteCustomer_Success() throws Exception {
         UUID id = UUID.randomUUID();
-        Mockito.doNothing().when(customerService).deleteCustomer(Mockito.eq(id));
+        Mockito.doNothing().when(customerService).deleteCustomer(id);
 
         mockMvc.perform(delete("/api/customers/" + id)
                         .contentType(MediaType.APPLICATION_JSON))

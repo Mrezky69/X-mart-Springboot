@@ -61,17 +61,19 @@ class BarangControllerIntegrationTest {
     @Test
     void testGetBarangById_Success() throws Exception {
         BarangResponse barang = new BarangResponse();
-        barang.setId(UUID.randomUUID());
+        UUID id = UUID.randomUUID();
+        barang.setId(id);
         barang.setNamaBarang("Test Barang");
         barang.setHargaSatuan(1000.0);
-        Mockito.when(barangService.getBarangById(Mockito.anyString())).thenReturn(barang);
+        Mockito.when(barangService.getBarangById(id.toString())).thenReturn(barang);
 
-        mockMvc.perform(get("/api/barang/" + UUID.randomUUID().toString())
+        mockMvc.perform(get("/api/barang/" + id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.namaBarang").value("Test Barang"))
                 .andExpect(jsonPath("$.hargaSatuan").value(1000.0));
     }
+
 
     @Test
     void testAddBarang_Success() throws Exception {
@@ -119,7 +121,7 @@ class BarangControllerIntegrationTest {
     @Test
     void testDeleteBarang_Success() throws Exception {
         UUID id = UUID.randomUUID();
-        Mockito.doNothing().when(barangService).deleteBarang(Mockito.eq(id));
+        Mockito.doNothing().when(barangService).deleteBarang(id);
 
         mockMvc.perform(delete("/api/barang/" + id)
                         .contentType(MediaType.APPLICATION_JSON))
