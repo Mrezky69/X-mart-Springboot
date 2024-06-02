@@ -11,17 +11,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import static com.project.spring.util.ResponseMessage.*;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
 
+    private final CustomerService customerService;
+
     @Autowired
-    private CustomerService customerService;
+    public CustomerController(CustomerService customerService){
+        this.customerService = customerService;
+    }
 
     @PostMapping ("/add")
-    public ResponseEntity<?> addCustomer(@Valid @RequestBody CustomerRequest customer) {
+    public ResponseEntity<Object> addCustomer(@Valid @RequestBody CustomerRequest customer) {
         try {
             CustomerResponse response = customerService.addCustomer(customer);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -52,7 +57,7 @@ public class CustomerController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCustomer(@PathVariable UUID id) {
         customerService.deleteCustomer(id);
-        return new ResponseEntity<>("Customer deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(SUCCESS_DELETE, HttpStatus.OK);
     }
 
     @GetMapping("/transaksi")

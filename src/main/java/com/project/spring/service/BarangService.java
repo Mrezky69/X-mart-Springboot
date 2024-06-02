@@ -10,12 +10,17 @@ import org.springframework.web.server.ResponseStatusException;
 import com.project.spring.dto.*;
 import com.project.spring.model.*;
 import com.project.spring.repository.*;
+import static com.project.spring.util.ResponseMessage.*;
 
 @Service
 public class BarangService {
 
+    private final BarangRepository barangRepository;
+
     @Autowired
-    private BarangRepository barangRepository;
+    public BarangService(BarangRepository barangRepository) {
+        this.barangRepository = barangRepository;
+    }
 
     public List<BarangResponse> listBarang() {
         List<Barang> barang = barangRepository.findAll();
@@ -37,9 +42,8 @@ public class BarangService {
     }
 
     public BarangResponse updateBarang(UUID id, BarangRequest barang) {
-        try {
             Barang existingBarang = barangRepository.findById(id)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Barang not found"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND));
 
             existingBarang.setNamaBarang(barang.getNama());
             existingBarang.setRfid(existingBarang.getRfid());
@@ -53,31 +57,22 @@ public class BarangService {
                     .rfid(updatedBarang.getRfid())
                     .hargaSatuan(updatedBarang.getHargaSatuan())
                     .build();
-
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
     }
 
     public void deleteBarang(UUID id) {
-        try {
             Barang existingBarang = barangRepository.findById(id)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Barang not found"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND));
             barangRepository.delete(existingBarang);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
     }
     
         public BarangResponse add(BarangRequest barang) {
-        try {
             Barang existingBarang = barangRepository.findByNamaBarang(barang.getNama());
             if (existingBarang != null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Data already exists");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, DATA_ALREADY);
             }
 
             if (barang.getNama() == null || barang.getNama().isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nama barang tidak boleh kosong");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, FIELD_MESSAGE);
             }
 
             Barang newbBarang = new Barang();
@@ -91,8 +86,5 @@ public class BarangService {
                     .namaBarang(newbBarang.getNamaBarang())
                     .hargaSatuan(newbBarang.getHargaSatuan())
                     .build();
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
     }
 }

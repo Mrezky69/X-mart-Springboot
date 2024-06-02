@@ -10,24 +10,25 @@ import org.springframework.web.server.ResponseStatusException;
 import com.project.spring.dto.*;
 import com.project.spring.model.*;
 import com.project.spring.repository.*;
-
+import static com.project.spring.util.ResponseMessage.*;
 @Service
 public class CustomerService {
 
-    @Autowired
-    private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
+    private final TransaksiRepository transaksiRepository;
+    private final BarangRepository barangRepository;
 
     @Autowired
-    private TransaksiRepository transaksiRepository;
-
-    @Autowired
-    private BarangRepository barangRepository;
+    public CustomerService(CustomerRepository customerRepository, TransaksiRepository transaksiRepository, BarangRepository barangRepository) {
+        this.customerRepository = customerRepository;
+        this.transaksiRepository = transaksiRepository;
+        this.barangRepository = barangRepository;
+    }
 
     public CustomerResponse addCustomer(CustomerRequest customer) {
-        try {
             Customer existingCustomer = customerRepository.findByNama(customer.getNama());
             if (existingCustomer != null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "QR Code already exists");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, DATA_ALREADY);
             }
             Customer newCustomer = new Customer();
             newCustomer.setNama(customer.getNama());
@@ -40,9 +41,6 @@ public class CustomerService {
                     .qrCode(newCustomer.getQrCode())
                     .wallet(newCustomer.getWallet())
                     .build();
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
     }
 
 
@@ -79,7 +77,7 @@ public class CustomerService {
     public CustomerResponse getCustomerById(String id) {
         Customer existingCustomer = customerRepository.findByQrCode(id);
         if (existingCustomer == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer Not Found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND);
         }
         return CustomerResponse.builder()
                 .id(existingCustomer.getId())
@@ -90,10 +88,12 @@ public class CustomerService {
     }
 
     public CustomerResponse updateCustomer(UUID id, CustomerRequest customer) {
-        try {
-            Customer existingCustomer = customerRepository.findById(id)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
-
+            Optional<Customer> existingCustomerOpt = customerRepository.findById(id);
+            if (existingCustomerOpt.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND);
+            }
+            
+            Customer existingCustomer = existingCustomerOpt.get();
             existingCustomer.setNama(customer.getNama());
             existingCustomer.setQrCode(existingCustomer.getQrCode());
             existingCustomer.setWallet(customer.getWallet());
@@ -106,18 +106,13 @@ public class CustomerService {
                     .qrCode(updatedCustomer.getQrCode())
                     .wallet(updatedCustomer.getWallet())
                     .build();
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
     }
 
     public void deleteCustomer(UUID id) {
-        try {
-            Customer existingCustomer = customerRepository.findById(id)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));                   
-            customerRepository.delete(existingCustomer);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+            Optional<Customer> existingCustomer = customerRepository.findById(id);
+            if (existingCustomer.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND);
+            }
+            customerRepository.delete(existingCustomer.get());
     }
 }

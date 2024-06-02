@@ -11,14 +11,19 @@ import jakarta.validation.Valid;
 import com.project.spring.dto.*;
 import com.project.spring.service.BarangService;
 import com.project.spring.util.ResponseHandler;
+import static com.project.spring.util.ResponseMessage.*;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/barang")
 public class BarangController {
-    
+
+    private final BarangService barangService;
+
     @Autowired
-    private BarangService barangService;
+    public BarangController(BarangService barangService) {
+        this.barangService = barangService;
+    }
 
     @GetMapping("/list")
     public ResponseEntity<List<BarangResponse>> listBarang() {
@@ -28,25 +33,25 @@ public class BarangController {
 
     @GetMapping("/{id}")
     public ResponseEntity<BarangResponse> getBarangById(@PathVariable String id) {
-        BarangResponse Barang = barangService.getBarangById(id);
-        return new ResponseEntity<>(Barang, HttpStatus.OK);
+        BarangResponse barang = barangService.getBarangById(id);
+        return new ResponseEntity<>(barang, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<BarangResponse> updateBarang(@PathVariable UUID id,
-            @Valid @RequestBody BarangRequest Barang) {
-        BarangResponse updatedBarang = barangService.updateBarang(id, Barang);
+            @Valid @RequestBody BarangRequest barang) {
+        BarangResponse updatedBarang = barangService.updateBarang(id, barang);
         return new ResponseEntity<>(updatedBarang, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBarang(@PathVariable UUID id) {
         barangService.deleteBarang(id);
-        return new ResponseEntity<>("Barang deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(SUCCESS_DELETE, HttpStatus.OK);
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> addBarang(@Valid @RequestBody BarangRequest barang) {
+    public ResponseEntity<Object> addBarang(@Valid @RequestBody BarangRequest barang) {
         try {
             BarangResponse response = barangService.add(barang);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
